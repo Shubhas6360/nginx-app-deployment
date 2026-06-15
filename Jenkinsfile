@@ -11,15 +11,14 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t my-nginx:v1 .'
+                sh 'podman build --format docker -t my-nginx:v1 .'
             }
         }
 
         stage('Verify Image') {
             steps {
-                sh 'docker images'
+                sh 'podman images'
             }
         }
-
     }
 }
