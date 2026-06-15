@@ -9,9 +9,13 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Build Image') {
             steps {
-                sh 'podman build --format docker -t my-nginx:v1 .'
+                sh '''
+                whoami
+                pwd
+                podman build --format docker -t my-nginx:v1 .
+                '''
             }
         }
 
