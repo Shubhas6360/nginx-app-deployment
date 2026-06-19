@@ -1,28 +1,47 @@
 pipeline {
-    agent any
+ agent any
 
-    stages {
+ environment {
+     IMAGE_NAME="my-nginx:v1"
+ }
 
-        stage('Checkout') {
-            steps {
-                echo 'Getting code from GitHub'
-            }
-        }
+ stages {
 
-        stage('Build Image') {
-            steps {
-                sh '''
-                whoami
-                pwd
-                podman build --format docker -t my-nginx:v1 .
-                '''
-            }
-        }
+ stage('Checkout') {
+ steps {
+ echo 'Getting code'
+ }
+ }
 
-        stage('Verify Image') {
-            steps {
-                sh 'podman images'
-            }
-        }
-    }
+ stage('Build Image') {
+ steps {
+ sh 'docker build -t $IMAGE_NAME .'
+ }
+ }
+
+ stage('Verify') {
+ steps {
+ sh 'docker images'
+ }
+ }
+
+ stage('Deploy') {
+ steps {
+
+ sh '''
+ docker stop web || true
+
+ docker rm web || true
+
+ docker run -d \
+ -p 8080:80 \
+ --name web \
+ $IMAGE_NAME
+ '''
+ }
+
+ }
+
+ }
+
 }
