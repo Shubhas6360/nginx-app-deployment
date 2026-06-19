@@ -1,47 +1,47 @@
 pipeline {
- agent any
+    agent any
 
- environment {
-     IMAGE_NAME="my-nginx:v1"
- }
+    stages {
 
- stages {
+        stage('Checkout') {
+            steps {
+                echo 'Getting code from GitHub...'
+                checkout scm
+            }
+        }
 
- stage('Checkout') {
- steps {
- echo 'Getting code'
- }
- }
+        stage('Build Image') {
+            steps {
+                sh '''
+                echo "Building Docker image..."
+                docker build -t my-nginx:v1 .
+                '''
+            }
+        }
 
- stage('Build Image') {
- steps {
- sh 'docker build -t $IMAGE_NAME .'
- }
- }
+        stage('Verify Image') {
+            steps {
+                sh '''
+                echo "Listing Docker images..."
+                docker images
+                '''
+            }
+        }
 
- stage('Verify') {
- steps {
- sh 'docker images'
- }
- }
+        stage('Deploy') {
+            steps {
+                sh '''
+                set -e
 
- stage('Deploy') {
- steps {
+                echo "Stopping old container if exists..."
+                docker rm -f web || true
 
- sh '''
- docker stop web || true
+                echo "Running new container..."
+                docker run -d -p 8080:80 --name web my-nginx:v1
 
- docker rm web || true
-
- docker run -d \
- -p 8080:80 \
- --name web \
- $IMAGE_NAME
- '''
- }
-
- }
-
- }
-
+                echo "Deployment completed successfully"
+                '''
+            }
+        }
+    }
 }
